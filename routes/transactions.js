@@ -1,36 +1,86 @@
-const express = require('express');
-const router = express.Router();
-const { v4: uuidv4 } = require('uuid'); // Import uuid
-const Transaction = require('../models/transaction');
+const express = require("express")
+const { nanoid } = require("nanoid")
+const transactionsRouter = express.Router()
+const transactionArray = require("../models/transaction")
 
-// Get all transactions
-router.get('/transactions', async (req, res) => {
-  try {
-    const transactions = await Transaction.find();
-    res.json(transactions);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+transactionsRouter.get("/", (req, res) => {
+    try{
+        res.status(200).send(transactionArray)
+    }
+    catch(error) {
+        res.status(404).json({error: `Something Went Wrong!`})
+    }
+})
 
-// Create transaction route
-router.post('/transactions', async (req, res) => {
-  console.log('Request body:', req.body); // Log the request body
-  const transaction = new Transaction({
-    id: uuidv4(), // Generate a unique id
-    item_name: req.body.item_name,
-    amount: req.body.amount,
-    date: req.body.date,
-    from: req.body.from,
-    category: req.body.category
-  });
+transactionsRouter.get("/:id", (req, res) => {
+    const { id } = req.params
+    const transaction = transactionArray.find((transaction) => transaction.id === id)
+    if (transaction) {
+            res.status(200).send(transaction)
+    } else {
+        // res.status(404).json({error: `Transaction with id ${id} does not exist.`})
+        res.send("Cannot find any Transaction with this id: " + id)
+    }
+})
 
-  try {
-    const newTransaction = await transaction.save();
-    res.status(201).json(newTransaction);
-  } catch (err) {
-    console.error('Error creating transaction:', err.message); 
-  }
-});
+transactionsRouter.post("/", (req, res) => {
+    let newDate = changeDateToHumanReadable(req.body["date"])
+    const updatedCurrentTransaction = {...req.body, date: newDate}
+    transactionArray.push(updatedCurrentTransaction)
+    try{
+        res.status(201).send(transactionArray[transactionArray.length - 1])
+    }
+    catch(error) {
+        res.status(404).json({error: `Something Went Wrong!`})
+    }
+})
 
-module.exports = router;
+transactionsRouter.delete("/:id", (req, res) => {
+    const { id } = req.params
+    const transactionToDeleteIndex = transactionArray.findIndex((transaction) => transaction.id === id)
+    if (transactionToDeleteIndex !== -1) {
+        transactionArray.splice(transactionToDeleteIndex, 1)
+        res.redirect("/transactions")
+    } 
+    else {
+        res.status(404).json({error: `Transaction with id ${id} does not exist.`})
+    }
+})
+
+transactionsRouter.put("/:id", (req, res) => {
+    const { id } = req.params
+    const transactionToUpdateIndex = transactionArray.findIndex((transaction) => transaction.id === id)
+    if (transactionToUpdateIndex !== -1) {
+        let newDate = changeDateToHumanReadable(req.body["date"])
+        const updatedCurrentTransaction = {...req.body, date: newDate}
+        transactionArray[transactionToUpdateIndex] = updatedCurrentTransaction
+        res.status(200).json(transactionArray[transactionToUpdateIndex])
+    } else {
+        res.status(404).json({error: `Transaction with id ${id} does not exist.`})
+    }
+})
+
+function changeDateToHumanReadable(str) {    
+    const monthObj = {
+        "01" : "Jan",
+        "02" : "Feb",
+        "03" : "Mar",
+        "04" : "Apr",
+        "05" : "May",
+        "06" : "Jun",
+        "07" : "Jul",
+        "08" : "Aug",
+        "09" : "Sep",
+        "10" : "Oct",
+        "11" : "Nov",
+        "12" : "Dec",
+    }
+    let splitDate = str.split("-")
+    if (str.includes(",")) {
+        return str
+    } else {
+        return monthObj[splitDate[1]] + " " + splitDate[2] + ", " + splitDate[0]
+    }
+}
+// Export
+module.exports = transactionsRouter;
