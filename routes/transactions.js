@@ -29,8 +29,7 @@ router.post('/transactions', async (req, res) => {
     const newTransaction = await transaction.save();
     res.status(201).json(newTransaction);
   } catch (err) {
-    console.error('Error creating transaction:', err.message); // Log the error message
-    res.status(400).json({ message: err.message });
+    console.error('Error creating transaction:', err.message); 
   }
 });
 
