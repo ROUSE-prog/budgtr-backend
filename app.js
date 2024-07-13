@@ -1,20 +1,22 @@
-const express = require("express")
-const cors = require("cors")
+const express = require('express')
+const cors = require('cors')
 
+// config
 const app = express()
 
+// middleware
 app.use(express.json())
 app.use(cors())
 
-const transactionsRoutes = require("./routes/transactions")
-app.use("/transactions", transactionsRoutes)
+// controllers
+const transactionsController = require('./controllers/transactions.controller')
 
-app.get("/", (req, res) => {
-    res.status(200).send("Welcome to My Bank Transaction App")
+// health check
+app.get('/', (req, res) => {
+  res.send('Hello, world!')
 })
 
-app.get("*", (req, res) => {
-    res.status(404).json({ error: "Sorry, no page found" });
-});
+// resources
+app.use('/transactions', transactionsController)
 
-module.exports = app
+module.exports = app;
