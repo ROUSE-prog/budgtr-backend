@@ -1,6 +1,6 @@
 # Budgtr Backend
 
-This is the backend application for the Budgtr project.
+This is the backend application for the Budgtr projecto
 
 ## Setup Instructions
 
