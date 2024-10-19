@@ -15,4 +15,4 @@ This is the backend application for the Budgtr projecto
 3. Set up MongoDB and configure the connection string in server.js.
 
 4. Start the server:
-   ``` npm start```
+   ``` npm start``>
